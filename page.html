@@ -1,12 +1,39 @@
+<!DOCTYPE html>
 <html>
- <head>
- </head>
- <body>
+<head>
+  <title>Puck.js Gesture ML Tool</title>
+  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
   <script src="https://www.espruino.com/js/uart.js"></script>
-  <script src="code.js"></script> 
-  
-  <button onclick="ledOn();">LED On!</button>
-  <button onclick="ledOff();">LED Off!</button>
+  <script src="code.js"></script>
+  <style>
+    body { font-family: sans-serif; padding: 1em; }
+    button, select { margin: 0.5em; }
+  </style>
+</head>
+<body>
+  <h1>Puck.js Gesture ML Tool</h1>
 
- </body>
+  <!-- Data Collection -->
+  <section>
+    <h2>1. Data Collection</h2>
+    <select id="gestureLabel">
+      <option value="shake">Shake</option>
+      <option value="tilt_left">Tilt Left</option>
+      <option value="tilt_right">Tilt Right</option>
+    </select>
+    <button onclick="connectToPuck()">Connect</button>
+    <button onclick="startRecording()">Start Recording</button>
+    <button onclick="stopRecording()">Stop Recording</button>
+    <button onclick="downloadCollectedData()">Download Data</button>
+  </section>
+
+  <!-- Training -->
+  <section>
+    <h2>2. Train Model</h2>
+    <button onclick="preprocessData()">Preprocess</button>
+    <button onclick="trainModel()">Train</button>
+  </section>
+
+  <pre id="log"></pre>
+</body>
 </html>
