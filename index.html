@@ -4,6 +4,8 @@
   <title>Puck.js Gesture ML Tool</title>
   <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
   <script src="https://www.espruino.com/js/uart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
   <style>
     body { font-family: sans-serif; padding: 1em; }
     button, select { margin: 0.5em; }
@@ -12,28 +14,54 @@
 <body>
   <h1>Puck.js Gesture ML Tool</h1>
 
+  <!-- Connect -->
+  <section>
+    <h2>0. Connect</h2>
+    <button onclick="connectToPuck()">Connect</button>
+  </section>
+
   <!-- Data Collection -->
   <section>
     <h2>1. Data Collection</h2>
     <select id="gestureLabel">
+      <option value="regular">Normal</option>
       <option value="shake">Shake</option>
       <option value="tilt_left">Tilt Left</option>
       <option value="tilt_right">Tilt Right</option>
     </select>
-    <button onclick="connectToPuck()">Connect</button>
-    <button onclick="startRecording()">Start Recording</button>
-    <button onclick="stopRecording()">Stop Recording</button>
+    <button id="startBtn" onclick="startRecording()">Start Recording</button>
+    <button id="stopBtn" onclick="stopRecording()">Stop Recording</button>
     <button onclick="downloadCollectedData()">Download Data</button>
+    <input type="file" id="fileInput" style="display: none;" onchange="loadCollectedData(this.files[0])">
+    <button onclick="document.getElementById('fileInput').click()">Upload Data</button>
   </section>
 
   <!-- Training -->
   <section>
     <h2>2. Train Model</h2>
-    <button onclick="preprocessData()">Preprocess</button>
-    <button onclick="trainModel()">Train</button>
+    <button id="preprocessBtn" onclick="preprocessData()">Preprocess</button>
+    <button id="trainBtn" onclick="trainModel()">Train</button>
+    <label for="epochsInput">Epochs:</label>
+    <input type="number" id="epochsInput" value="50" min="1" style="width: 60px;">
+    <button onclick="saveModel()">Save Model</button>
+
+    <input type="file" id="modelFiles" multiple onchange="handleModelFiles(this.files)" style="display: none;">
+    <button onclick="document.getElementById('modelFiles').click()">Load Model</button>
   </section>
 
-  <pre id="log"></pre>
+  <!-- Inference -->
+  <section>
+    <h2>3. Run the Model</h2>
+    <button id="startInferenceBtn" onclick="startInference()">Start Inference</button>
+    <button id="stopInferenceBtn" onclick="stopInference()">Stop Inference</button>
+    <p id="liveClass">Live Classification: Waiting for data...</p>
+  </section>
+
+  <!-- Logging -->
+  <section>
+    <h2>Logs</h2>
+    <pre id="log"></pre>
+  </section>
 
   <script src="code.js"></script>
 </body>
