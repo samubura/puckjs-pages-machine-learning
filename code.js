@@ -1,4 +1,4 @@
-let puck;
+let uart;
 let recording = false;
 let collectedSamples = [];
 let currentLabel = "";
@@ -10,13 +10,11 @@ function log(msg) {
 }
 
 function connectToPuck() {
-  Puck.connect(function(connection) {
-    if (!connection) {
-      log("Couldn't connect to Puck.js");
-      return;
-    }
-    puck = connection;
-    puck.on("data", function(d) {
+  uart = new UART();
+  
+  uart.on('connect', function() {
+    log("Connected to Puck.js");
+    uart.on('data', function(d) {
       try {
         const lines = d.trim().split("\n");
         lines.forEach(line => {
@@ -28,15 +26,22 @@ function connectToPuck() {
           }
         });
       } catch (e) {
-        // skip malformed
+        // skip malformed data
       }
     });
-    log("Connected to Puck.js");
+  });
+
+  uart.connect(function(err) {
+    if (err) {
+      log("Couldn't connect to Puck.js");
+    }
   });
 }
 
 function sendCommand(cmd) {
-  if (puck) puck.write(cmd);
+  if (uart) {
+    uart.write(cmd);
+  }
 }
 
 function startRecording() {
