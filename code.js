@@ -1,3 +1,88 @@
+// All logic has been modularized into the code/ directory.
+
+// --- Populate clustering feature dropdowns on load ---
+window.addEventListener("load", () => {
+  const features = [
+    'meanAccX','meanAccY','meanAccZ','stdAccX','stdAccY','stdAccZ',
+    'meanGyroX','meanGyroY','meanGyroZ','stdGyroX','stdGyroY','stdGyroZ'
+  ];
+  const xSel = document.getElementById('clusterFeatureX');
+  const ySel = document.getElementById('clusterFeatureY');
+  if (xSel && ySel) {
+    features.forEach(f => {
+      let optX = document.createElement('option');
+      optX.value = f; optX.textContent = f;
+      xSel.appendChild(optX);
+      let optY = document.createElement('option');
+      optY.value = f; optY.textContent = f;
+      ySel.appendChild(optY);
+    });
+    xSel.value = 'meanAccX';
+    ySel.value = 'meanAccY';
+  }
+});
+// --- Unsupervised Learning: K-means Clustering and Visualization ---
+let clusterChart = null;
+
+function runClusteringAndVisualize() {
+  if (!labeledSamples.length) {
+    log("No labeled samples to cluster. Please collect labeled data first.");
+    return;
+  }
+  // Extract features for each labeled sample (single-sample window)
+  const featuresArr = labeledSamples.map(s => extractFeatures([s]));
+  // Get selected features from UI
+  const xFeature = document.getElementById('clusterFeatureX').value;
+  const yFeature = document.getElementById('clusterFeatureY').value;
+  const dataPoints = featuresArr.map(f => [f[xFeature], f[yFeature]]);
+  const k = parseInt(document.getElementById('numClusters').value, 10) || 4;
+  const kmeans = ml5.kmeans(dataPoints, k, () => {
+    log("K-means clustering complete.");
+    const clusters = kmeans.clusters;
+    lastClusterAssignments = clusters;
+    lastClusterCentroids = kmeans.centroids;
+    visualizeClusters2D(dataPoints, clusters, xFeature, yFeature);
+  });
+}
+
+function visualizeClusters2D(dataPoints, clusters, xFeature, yFeature) {
+  const ctx = document.getElementById('clusterChart').getContext('2d');
+  // Prepare data grouped by cluster
+  const k = Math.max(...clusters) + 1;
+  const colors = [
+    'rgba(255, 99, 132, 0.7)',
+    'rgba(54, 162, 235, 0.7)',
+    'rgba(255, 206, 86, 0.7)',
+    'rgba(75, 192, 192, 0.7)',
+    'rgba(153, 102, 255, 0.7)',
+    'rgba(255, 159, 64, 0.7)'
+  ];
+  const datasets = [];
+  for (let i = 0; i < k; i++) {
+    const clusterPoints = dataPoints
+      .map((pt, idx) => ({ pt, idx }))
+      .filter(obj => clusters[obj.idx] === i)
+      .map(obj => ({ x: obj.pt[0], y: obj.pt[1] }));
+    datasets.push({
+      label: `Cluster ${i + 1}`,
+      data: clusterPoints,
+      backgroundColor: colors[i % colors.length],
+      pointRadius: 5
+    });
+  }
+  if (clusterChart) clusterChart.destroy();
+  clusterChart = new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets },
+    options: {
+      plugins: { legend: { display: true } },
+      scales: {
+        x: { title: { display: true, text: xFeature || 'X' } },
+        y: { title: { display: true, text: yFeature || 'Y' } }
+      }
+    }
+  });
+}
 let UART = Puck;
 
 
@@ -23,16 +108,24 @@ const inferenceWindowSize = 10;
 let inferenceBuffer = [];
 
 function log(msg) {
-  document.getElementById("log").textContent += msg + "\n";
+  const logElem = document.getElementById("log");
+  logElem.textContent += msg + "\n";
+  logElem.scrollTop = logElem.scrollHeight;
 }
 
 function updateUIState() {
-  document.getElementById("startBtn").disabled = !uart;
-  document.getElementById("stopBtn").disabled = !recording;
-  document.getElementById("preprocessBtn").disabled = collectedSamples.length === 0;
-  document.getElementById("trainBtn").disabled = featureVectors.length === 0;
-  document.getElementById("startInferenceBtn").disabled = !nn || !uart ||inferencing;
-  document.getElementById("stopInferenceBtn").disabled = !inferencing;
+  if (document.getElementById("startBtn"))
+    document.getElementById("startBtn").disabled = !uart;
+  if (document.getElementById("stopBtn"))
+    document.getElementById("stopBtn").disabled = !recording;
+  if (document.getElementById("preprocessBtn"))
+    document.getElementById("preprocessBtn").disabled = collectedSamples.length === 0;
+  if (document.getElementById("trainBtn"))
+    document.getElementById("trainBtn").disabled = featureVectors.length === 0;
+  if (document.getElementById("startInferenceBtn"))
+    document.getElementById("startInferenceBtn").disabled = !nn || !uart || inferencing;
+  if (document.getElementById("stopInferenceBtn"))
+    document.getElementById("stopInferenceBtn").disabled = !inferencing;
 }
 
 window.addEventListener("load", updateUIState);
@@ -132,16 +225,27 @@ function loadCollectedData(file) {
   }
 }
 
+// Preprocess all labeled data: manual and cluster-labeled
 function preprocessData() {
   featureVectors = [];
   const windowSize = 10;
 
-  for (let i = 0; i <= collectedSamples.length - windowSize; i += windowSize) {
-    const window = collectedSamples.slice(i, i + windowSize);
-
+  // 1. Add manually labeled samples (windowed)
+  for (let i = 0; i <= labeledSamples.length - windowSize; i += windowSize) {
+    const window = labeledSamples.slice(i, i + windowSize);
     const features = extractFeatures(window);
     features.label = window[0].label;
     featureVectors.push(features);
+  }
+
+  // 2. Add cluster-labeled samples (single sample, use clusterLabels)
+  if (lastClusterAssignments.length && clusterLabels.length) {
+    for (let i = 0; i < lastClusterAssignments.length; i++) {
+      const sample = labeledSamples[i];
+      const features = extractFeatures([sample]);
+      features.label = clusterLabels[lastClusterAssignments[i]] || `cluster_${lastClusterAssignments[i]+1}`;
+      featureVectors.push(features);
+    }
   }
 
   log(`Preprocessing complete. ${featureVectors.length} feature vectors created.`);
@@ -229,6 +333,7 @@ function saveModel() {
   if (nn) {
     nn.save();
     log("Model saved. Download initiated.");
+    updateWorkflowUIState();
   } else {
     log("No trained model available to save.");
   }
@@ -245,6 +350,7 @@ function loadModel(files) {
   nn.load(files, () => {
     log("Model loaded successfully and ready for inference.");
     updateUIState();
+    updateWorkflowUIState();
   });
 }
 

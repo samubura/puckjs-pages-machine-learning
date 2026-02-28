@@ -1,62 +1,149 @@
+/* Chart container for consistent plot sizing */
+.long-chart {
+  width: 100%;
+}
+
+.square-chart {
+  width: 400px;
+  height: 400px;
+}
+
+/* Navbar and Log Sidebar Styles */
+#navbar {
+  width: 100%;
+  background: #3498db;
+  color: #fff;
+  padding: 0.5em 1em;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+#logSidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 350px;
+  height: 100vh;
+  background: #f9fafb;
+  color: #222;
+  box-shadow: -2px 0 8px rgba(0,0,0,0.08);
+  transform: translateX(100%);
+  transition: transform 0.3s;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #e0e0e0;
+}
+#logSidebar.open {
+  transform: translateX(0);
+}
+#logSidebar h2 {
+  margin: 0;
+  padding: 1em 2.5em 1em 1em;
+  background: #eaf3fb;
+  font-size: 1.2em;
+  border-bottom: 1px solid #e0e0e0;
+  color: #2980b9;
+}
+#logSidebar .closeBtn {
+  position: absolute;
+  top: 0.5em;
+  left: 0.5em;
+  background: none;
+  color: #888;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+}
+#logSidebar .closeBtn:hover {
+  color: #e74c3c;
+}
+#logSidebar pre {
+  flex: 1;
+  margin: 0;
+  padding: 1em;
+  background: #f9fafb;
+  color: #222;
+  overflow: auto;
+  font-size: 0.95em;
+  max-height: calc(100vh - 90px);
+  border: none;
+}
+#logSidebar .log-actions {
+  padding: 0.5em 1em 1em 1em;
+  background: #f9fafb;
+  border-top: 1px solid #e0e0e0;
+  text-align: right;
+}
+
 body {
-    font-family: "Segoe UI", sans-serif;
-    padding: 2em;
-    background-color: #f8f9fa;
-    color: #333;
-  }
+  font-family: "Segoe UI", sans-serif;
+  padding: 0;
+  margin: 0;
+  background-color: #f8f9fa;
+  color: #333;
+}
 
-  h1 {
-    font-size: 1.8em;
-    margin-bottom: 0.5em;
-    color: #2c3e50;
-  }
+#content {
+  padding: 2em;
+}
 
-  h2 {
-    font-size: 1.4em;
-    color: #34495e;
-    margin-top: 1.5em;
-  }
+h1 {
+  font-size: 1.8em;
+  margin-bottom: 0.5em;
+  color: #2c3e50;
+}
 
-  button, select {
-    margin: 0.5em;
-    padding: 0.6em 1.2em;
-    font-size: 1em;
-    border: none;
-    border-radius: 8px;
-    background-color: #3498db;
-    color: white;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
+h2 {
+  font-size: 1.4em;
+  color: #34495e;
+  margin-top: 1.5em;
+}
 
-  button:hover:not(:disabled),
-  select:hover:not(:disabled) {
-    background-color: #2980b9;
-  }
+button, select {
+  margin: 0.5em;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  border: none;
+  border-radius: 8px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
 
-  button:disabled {
-    background-color: #bdc3c7;
-    cursor: not-allowed;
-  }
+button:hover:not(:disabled),
+select:hover:not(:disabled) {
+  background-color: #2980b9;
+}
 
-  section {
-    margin-bottom: 2em;
-    padding-bottom: 1em;
-    border-bottom: 1px solid #ddd;
-  }
+button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
 
-  #liveClass {
-    font-size: 1.2em;
-    color: #2c3e50;
-    margin-top: 0.5em;
-  }
+section {
+  margin-bottom: 2em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid #ddd;
+}
 
-  #log {
-    background-color: #eef1f4;
-    border: 1px solid #ccc;
-    padding: 1em;
-    height: 200px;
-    overflow-y: scroll;
-    white-space: pre-wrap;
-    font-family: monospace;
-  }
+#liveClass {
+  font-size: 1.2em;
+  color: #2c3e50;
+  margin-top: 0.5em;
+}
+
+#log {
+  background-color: #eef1f4;
+  border: 1px solid #ccc;
+  padding: 1em;
+  height: 200px;
+  overflow-y: scroll;
+  white-space: pre-wrap;
+  font-family: monospace;
+}

@@ -2,68 +2,158 @@
 <html>
 <head>
   <title>Puck.js Gesture ML Tool</title>
-  <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+  <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>
   <!-- <script src="https://www.espruino.com/js/uart.js"></script> -->
     <script src="https://www.puck-js.com/puck.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css">
-  <style>
-    body { font-family: sans-serif; padding: 1em; }
-    button, select { margin: 0.5em; }
-  </style>
+  <!-- Style moved to style.css -->
 </head>
 <body>
-  <h1>Puck.js Gesture ML Tool</h1>
 
-  <!-- Connect -->
-  <section>
-    <h2>0. Connect</h2>
-    <button onclick="connectToPuck()">Connect</button>
-  </section>
+  <div id="navbar">
+    <button id="toggleLogBtn" onclick="toggleLogSidebar()">Show Logs</button>
+  </div>
 
-  <!-- Data Collection -->
-  <section>
-    <h2>1. Data Collection</h2>
-    <select id="gestureLabel">
-      <option value="regular">Normal</option>
-      <option value="shake">Shake</option>
-      <option value="tilt_left">Tilt Left</option>
-      <option value="tilt_right">Tilt Right</option>
-    </select>
-    <button id="startBtn" onclick="startRecording()">Start Recording</button>
-    <button id="stopBtn" onclick="stopRecording()">Stop Recording</button>
-    <button onclick="downloadCollectedData()">Download Data</button>
-    <input type="file" id="fileInput" style="display: none;" onchange="loadCollectedData(this.files[0])">
-    <button onclick="document.getElementById('fileInput').click()">Upload Data</button>
-  </section>
+  <div id="content">
+    <h1>Puck.js Gesture ML Tool</h1>
 
-  <!-- Training -->
-  <section>
-    <h2>2. Train Model</h2>
-    <button id="preprocessBtn" onclick="preprocessData()">Preprocess</button>
-    <button id="trainBtn" onclick="trainModel()">Train</button>
-    <label for="epochsInput">Epochs:</label>
-    <input type="number" id="epochsInput" value="50" min="1" style="width: 60px;">
-    <button onclick="saveModel()">Save Model</button>
+    <!-- 0. Connect -->
+    <section>
+      <h2>0. Connect</h2>
+      <button onclick="connectToPuck()">Connect</button>
+    </section>
 
-    <input type="file" id="modelFiles" multiple onchange="handleModelFiles(this.files)" style="display: none;">
-    <button onclick="document.getElementById('modelFiles').click()">Load Model</button>
-  </section>
+    <!-- 1. Raw Data Collection (no labels) -->
+    <section>
+      <h2>1. Collect Raw Data</h2>
+      <button id="startRawBtn" onclick="startRawRecording()">Start Recording</button>
+      <button id="stopRawBtn" onclick="stopRawRecording()">Stop Recording</button>
+      <button onclick="downloadCollectedData()">Download Data</button>
+      <input type="file" id="fileInput" style="display: none;" onchange="loadCollectedData(this.files[0])">
+      <button onclick="document.getElementById('fileInput').click()">Upload Data</button>
+      <span id="rawDataCount"></span>
+    </section>
 
-  <!-- Inference -->
-  <section>
-    <h2>3. Run the Model</h2>
-    <button id="startInferenceBtn" onclick="startInference()">Start Inference</button>
-    <button id="stopInferenceBtn" onclick="stopInference()">Stop Inference</button>
-    <p id="liveClass">Live Classification: Waiting for data...</p>
-  </section>
+    <!-- 2. Raw Data Visualization -->
+    <section>
+      <h2>2. Visualize Raw Data</h2>
+      <button onclick="visualizeRawData()">Show Raw Data Plot</button>
+      <div class="long-chart">
+        <canvas id="rawDataChart"></canvas>
+      </div>
 
-  <!-- Logging -->
-  <section>
+    </section>
+
+    <!-- 3. Feature Engineering -->
+    <section>
+      <h2>3. Feature Engineering</h2>
+      <form id="featureForm" onsubmit="event.preventDefault(); runFeatureEngineering();">
+        <fieldset>
+          <legend>Select Features:</legend>
+          <label><input type="checkbox" id="feat_mean" checked> Mean</label>
+          <label><input type="checkbox" id="feat_stddev" checked> Stddev</label>
+          <label><input type="checkbox" id="feat_min"> Min</label>
+          <label><input type="checkbox" id="feat_max"> Max</label>
+        </fieldset>
+        <label for="windowSize">Window Size:</label>
+        <input type="number" id="windowSize" value="10" min="1" max="100" style="width: 60px;">
+        <button type="submit">Process Features</button>
+      </form>
+      <span id="featureCount"></span>
+    </section>
+
+    <!-- 4. Clustering (with parameter controls) -->
+    <section>
+      <label for="numClusters">Clusters (k):</label>
+      <input type="number" id="numClusters" value="4" min="2" max="10" style="width: 60px;">
+      <label for="clusterFeatureX">X Feature:</label>
+      <select id="clusterFeatureX"></select>
+      <label for="clusterFeatureY">Y Feature:</label>
+      <select id="clusterFeatureY"></select>
+      <button onclick="runClusteringAndVisualize()">Run K-means & Visualize</button>
+      <div class="square-chart">
+        <canvas id="clusterChart"></canvas>
+      </div>
+
+
+    </section>
+
+    <!-- 5. Labeled Data Collection (small samples) -->
+    <section>
+      <h2>5. Collect Labeled Data</h2>
+      <select id="gestureLabel">
+        <option value="regular">Normal</option>
+        <option value="shake">Shake</option>
+        <option value="tilt_left">Tilt Left</option>
+        <option value="tilt_right">Tilt Right</option>
+      </select>
+      <button id="startLabelBtn" onclick="startLabeledRecording()">Start Labeled Recording</button>
+      <button id="stopLabelBtn" onclick="stopLabeledRecording()">Stop Labeled Recording</button>
+      <span id="labeledDataCount"></span>
+      <button onclick="visualizeLabeledData()">Visualize Labeled Data</button>
+      <canvas id="labeledDataChart"></canvas>
+
+    </section>
+
+    <!-- 6. Cluster Labeling & Similarity -->
+    <section>
+      <h2>6. Cluster Labeling & Similarity</h2>
+      <button onclick="assignLabelsToClusters()">Assign Labels to Clusters</button>
+      <button onclick="visualizeClusterLabeling()">Visualize Cluster Labeling</button>
+      <div id="clusterLabelingUI"></div>
+      <div id="similarityResults"></div>
+      <canvas id="clusterLabelingChart"></canvas>
+    </section>
+
+    <!-- 7. Training -->
+    <section>
+      <h2>7. Train Model</h2>
+      <button id="preprocessBtn" onclick="preprocessData()">Preprocess</button>
+      <button id="trainBtn" onclick="trainModel()">Train</button>
+      <label for="epochsInput">Epochs:</label>
+      <input type="number" id="epochsInput" value="50" min="1" style="width: 60px;">
+      <button onclick="saveModel()">Save Model</button>
+      <input type="file" id="modelFiles" multiple onchange="handleModelFiles(this.files)" style="display: none;">
+    </section>
+
+    <!-- 8. Run the Model -->
+    <section>
+      <h2>8. Run the Model</h2>
+      <button id="startInferenceBtn" onclick="startInference()">Start Inference</button>
+      <button id="stopInferenceBtn" onclick="stopInference()">Stop Inference</button>
+      <p id="liveClass">Live Classification: Waiting for data...</p>
+    </section>
+  </div>
+
+  <!-- Logging Sidebar -->
+  <div id="logSidebar">
+    <button class="closeBtn" onclick="toggleLogSidebar()">&times;</button>
     <h2>Logs</h2>
     <pre id="log"></pre>
-  </section>
+    <div class="log-actions">
+      <button onclick="clearLog()">Clear Log</button>
+    </div>
+  </div>
 
-  <script src="code.js"></script>
+  <script>
+    function toggleLogSidebar() {
+      const sidebar = document.getElementById('logSidebar');
+      sidebar.classList.toggle('open');
+    }
+  </script>
+
+  <script src="code/state.js"></script>
+  <script src="code/utils.js"></script>
+  <script src="code/ui.js"></script>
+  <script src="code/0_puck_connection.js"></script>
+  <script src="code/1_raw_collection.js"></script>
+  <script src="code/2_raw_visualization.js"></script>
+  <script src="code/3_feature_engineering.js"></script>
+  <script src="code/4_clustering.js"></script>
+  <script src="code/5_labeled_collection.js"></script>
+  <script src="code/6_similarity_match.js"></script>
+  <script src="code/7_training.js"></script>
+  <script src="code/8_inference.js"></script>
 </body>
 </html>
