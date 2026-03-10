@@ -81,7 +81,8 @@ function extractFeatureVectors(samples, selected, windowSize, labelFn) {
 }
 
 function runFeatureEngineering() {
-  if (!collectedSamples || !collectedSamples.length) {
+  let rawData = collectedSamples.filter(s => s.label == null);
+  if (!rawData || !rawData.length) {
     log("No raw data to process.");
     return;
   }
@@ -92,7 +93,7 @@ function runFeatureEngineering() {
     max: document.getElementById('feat_max').checked
   };
   const windowSize = parseInt(document.getElementById('windowSize').value, 10) || 1;
-  featureVectors = extractFeatureVectors(collectedSamples, selected, windowSize);
+  featureVectors = extractFeatureVectors(rawData, selected, windowSize);
   document.getElementById('featureCount').textContent = `Feature vectors: ${featureVectors.length}`;
   log(`Feature engineering complete. ${featureVectors.length} vectors created.`);
   if (window.updateClusterFeatureDropdowns) window.updateClusterFeatureDropdowns();

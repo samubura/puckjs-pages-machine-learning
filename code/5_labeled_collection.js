@@ -9,7 +9,7 @@ function startLabeledRecording() {
 	if (!currentLabel) {
 		const select = document.getElementById('gestureLabel');
 		if (select && select.value) {
-			currentLabel = select.value;
+			setCurrentLabel(select.value);
 		} else {
 			log("Please select a label.");
 			return;
@@ -51,7 +51,7 @@ function addNewGestureLabel() {
 	option.textContent = newLabel;
 	select.appendChild(option);
 	select.value = newLabel;
-	currentLabel = newLabel;
+	setCurrentLabel(newLabel);
 	log(`Added new label: ${newLabel}`);
 	updateUIState();
 	input.value = '';
@@ -63,8 +63,13 @@ window.addNewGestureLabel = addNewGestureLabel;
 // Run feature engineering for the current label
 function runLabeledFeatureEngineering() {
 	if (!currentLabel) {
-		log('No label selected.');
-		return;
+		const select = document.getElementById('gestureLabel');
+		if (select && select.value) {
+			setCurrentLabel(select.value);
+		} else {
+			log("Please select a label.");
+			return;
+		}
 	}
 	if (!collectedSamples || !collectedSamples.length) {
 		log('No collected samples.');

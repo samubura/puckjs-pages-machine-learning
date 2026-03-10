@@ -20,7 +20,6 @@ function runClustering() {
     // Extract cluster assignments
     const clusteredData = window.kmeansModel.dataset;
     window.lastClusterAssignments = clusteredData.map(d => d.centroid);
-    window.lastClusterCentroids = window.kmeansModel.centroids;
     log(`Clustering complete. ${k} clusters formed.`);
     redrawClusterVisualization();
   }
@@ -99,23 +98,23 @@ const colors = [
 }
 
 function updateClusterFeatureDropdowns() {
+  if (!featureVectors || !featureVectors.length) return;
+  
+  const keys = Object.keys(featureVectors[0]).filter(k => k !== 'label');
   const xSel = document.getElementById('clusterFeatureX');
   const ySel = document.getElementById('clusterFeatureY');
-  if (!featureVectors || !featureVectors.length) return;
-  const keys = Object.keys(featureVectors[0]).filter(k => k !== 'label');
-  xSel.innerHTML = '';
-  ySel.innerHTML = '';
-  keys.forEach(f => {
-    let optX = document.createElement('option');
-    optX.value = f; optX.textContent = f;
-    xSel.appendChild(optX);
-    let optY = document.createElement('option');
-    optY.value = f; optY.textContent = f;
-    ySel.appendChild(optY);
+  const xFeature = document.getElementById('labeledClusterX');
+	const yFeature = document.getElementById('labeledClusterY');
+  
+  [xSel, ySel, xFeature, yFeature].forEach(sel => {
+    sel.innerHTML = keys.map(f => `<option value="${f}">${f}</option>`).join('');
   });
+  
   if (keys.length > 1) {
     xSel.value = keys[0];
     ySel.value = keys[1];
+    xFeature.value = keys[0];
+    yFeature.value = keys[1];
   }
 }
 window.updateClusterFeatureDropdowns = updateClusterFeatureDropdowns;

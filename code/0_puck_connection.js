@@ -71,3 +71,32 @@ function stopCollecting() {
 	uart.write("reset();\n");
 }
 
+
+function startInference() {
+	if (!uart) {
+		log("Connect to Puck.js first.");
+		return;
+	}
+	if (!nn) {
+		log("Train or load a model first.");
+		return;
+	}
+	inferencing = true;
+	inferenceBuffer = []; // Clear the inference buffer
+	log("Starting inference...");
+	updateUIState();
+	uart.write("Puck.accelOn();setInterval(()=>{var a=Puck.accel();Bluetooth.println(JSON.stringify(a));},100);\n");
+}
+
+
+function stopInference() {
+	if (!uart) {
+		log("Connect to Puck.js first.");
+		return;
+	}
+	inferencing = false;
+	inferenceBuffer = []; // Clear the inference buffer
+	log("Inference stopped.");
+	updateUIState();
+	uart.write("reset();\n");
+}
