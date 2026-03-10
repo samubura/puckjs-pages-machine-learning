@@ -45,8 +45,10 @@ function processSample(sample) {
 		sample.label = currentLabel;
 		sample.timestamp = Date.now();
 		collectedSamples.push(sample);
-		console.log("Collected sample:", sample);
-		updateUIState();
+		// Update counters every 10 samples for better performance
+		if (collectedSamples.length % 10 === 0) {
+			updateUIState();
+		}
 	} else if (inferencing && nn) {
 		inferClass(sample);
 	}
@@ -58,7 +60,8 @@ function startCollecting() {
 		return;
 	}
 	recording = true;
-	uart.write("Puck.accelOn();setInterval(()=>{var a=Puck.accel();Bluetooth.println(JSON.stringify(a));},100);\n");
+	updateUIState();
+	uart.write(`Puck.accelOn();setInterval(()=>{var a=Puck.accel();Bluetooth.println(JSON.stringify(a));},${frequency});\n`);
 }
 
 
@@ -85,7 +88,7 @@ function startInference() {
 	inferenceBuffer = []; // Clear the inference buffer
 	log("Starting inference...");
 	updateUIState();
-	uart.write("Puck.accelOn();setInterval(()=>{var a=Puck.accel();Bluetooth.println(JSON.stringify(a));},100);\n");
+	uart.write(`Puck.accelOn();setInterval(()=>{var a=Puck.accel();Bluetooth.println(JSON.stringify(a));},${frequency});\n`);
 }
 
 
@@ -99,4 +102,10 @@ function stopInference() {
 	log("Inference stopped.");
 	updateUIState();
 	uart.write("reset();\n");
+}
+
+function setFrequency() {
+	document.getElementById("frequencyInput").addEventListener("change", function() {
+		frequency = parseInt(this.value);
+	});
 }

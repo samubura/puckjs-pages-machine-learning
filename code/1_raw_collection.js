@@ -36,8 +36,9 @@ function loadCollectedData(file) {
 		const reader = new FileReader();
 		reader.onload = function (e) {
 			try {
-				collectedSamples = collectedSamples.concat(JSON.parse(e.target.result));
-				log("Data loaded. " + collectedSamples.length + " samples.");
+				const loadedData = JSON.parse(e.target.result);
+				collectedSamples = collectedSamples.concat(loadedData);
+				log("Data loaded. " + collectedSamples.length + " total samples.");
 				updateUIState();
 			} catch (err) {
 				log("Error loading data: " + err);

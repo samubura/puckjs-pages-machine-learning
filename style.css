@@ -113,23 +113,150 @@ button, select {
   background-color: #3498db;
   color: white;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  font-family: "Segoe UI", sans-serif;
 }
 
 button:hover:not(:disabled),
 select:hover:not(:disabled) {
   background-color: #2980b9;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled),
+select:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 button:disabled {
   background-color: #bdc3c7;
   cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Input Fields - Unified Styling */
+input[type="number"],
+input[type="text"],
+select {
+  padding: 0.6em 0.8em;
+  font-size: 1em;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #495057;
+  transition: all 0.3s ease;
+  font-family: "Segoe UI", sans-serif;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+input[type="number"]:hover,
+input[type="text"]:hover,
+select:hover {
+  border-color: #adb5bd;
+}
+
+.input-small {
+  width: 80px;
+}
+
+.input-text {
+  min-width: 200px;
+}
+
+.file-input {
+  display: none;
+}
+
+/* Form Layout */
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  margin: 0.75em 0;
+  flex-wrap: wrap;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin: 1em 0;
+}
+
+/* Labels */
+label {
+  font-weight: 500;
+  color: #495057;
+  font-size: 0.95em;
+  white-space: nowrap;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-right: 1em;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+.checkbox-label input[type="checkbox"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+}
+
+/* Fieldset Styling */
+.feature-fieldset {
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1em;
+  margin: 1em 0;
+  background-color: #f8f9fa;
+}
+
+.feature-fieldset legend {
+  font-weight: 600;
+  color: #495057;
+  padding: 0 0.5em;
+  font-size: 0.95em;
 }
 
 section {
-  margin-bottom: 2em;
-  padding-bottom: 1em;
-  border-bottom: 1px solid #ddd;
+  margin-bottom: 2.5em;
+  padding: 1.5em;
+  padding-bottom: 2em;
+  border-bottom: 2px solid #e9ecef;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+section:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+section:last-of-type {
+  border-bottom: none;
+}
+
+h2 {
+  font-size: 1.4em;
+  color: #2c3e50;
+  margin-top: 0;
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 2px solid #3498db;
+  display: inline-block;
 }
 
 #liveClass {
@@ -200,4 +327,211 @@ section {
   overflow-y: scroll;
   white-space: pre-wrap;
   font-family: monospace;
+}
+/* Status Indicators and Counters */
+.status-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: center;
+  margin-top: 1em;
+  padding: 0.75em;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #dee2e6;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.4em 0.9em;
+  border-radius: 20px;
+  font-size: 0.95em;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.status-badge.inactive {
+  background-color: #e9ecef;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+.status-badge.active {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #28a745;
+  animation: pulse-success 2s ease-in-out infinite;
+}
+
+.status-badge.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+  animation: pulse-warning 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-success {
+  0%, 100% { box-shadow: 0 2px 4px rgba(40, 167, 69, 0.2); }
+  50% { box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4); }
+}
+
+@keyframes pulse-warning {
+  0%, 100% { box-shadow: 0 2px 4px rgba(255, 193, 7, 0.2); }
+  50% { box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4); }
+}
+
+.data-counter {
+  display: inline-block;
+  padding: 0.4em 0.9em;
+  border-radius: 8px;
+  font-size: 0.95em;
+  font-weight: 500;
+  background-color: #ffffff;
+  color: #495057;
+  border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.data-counter.active {
+  background-color: #e7f3ff;
+  color: #004085;
+  border-color: #3498db;
+  font-weight: 600;
+}
+
+.data-counter:empty {
+  display: none;
+}
+
+.label-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  width: 100%;
+  margin-top: 0.5em;
+}
+
+.label-count {
+  display: inline-block;
+  padding: 0.3em 0.7em;
+  border-radius: 6px;
+  font-size: 0.9em;
+  background-color: #e7f3ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  #content {
+    padding: 1em;
+  }
+  
+  section {
+    padding: 1em;
+  }
+  
+  h1 {
+    font-size: 1.5em;
+  }
+  
+  h2 {
+    font-size: 1.2em;
+  }
+  
+  .control-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5em;
+  }
+  
+  .button-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .button-group button {
+    width: 100%;
+    margin: 0.25em 0;
+  }
+  
+  .input-text {
+    width: 100%;
+  }
+  
+  .square-chart {
+    width: 100%;
+    height: 300px;
+  }
+  
+  #logSidebar {
+    width: 100%;
+  }
+}
+
+/* Accessibility Improvements */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #3498db;
+  outline-offset: 2px;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better Typography */
+body {
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Chart Containers - Enhanced */
+.long-chart,
+.square-chart {
+  margin: 1.5em 0;
+  padding: 1em;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Loading State for Buttons */
+button.loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+button.loading::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tooltips could be added here in the future */
+[data-tooltip] {
+  position: relative;
+  cursor: help;
 }

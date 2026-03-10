@@ -93,9 +93,16 @@ function runFeatureEngineering() {
     max: document.getElementById('feat_max').checked
   };
   const windowSize = parseInt(document.getElementById('windowSize').value, 10) || 1;
+  
+  log(`Processing ${rawData.length} raw samples with window size ${windowSize}...`);
   featureVectors = extractFeatureVectors(rawData, selected, windowSize);
-  document.getElementById('featureCount').textContent = `Feature vectors: ${featureVectors.length}`;
-  log(`Feature engineering complete. ${featureVectors.length} vectors created.`);
+  
+  // Calculate feature count
+  const featureKeys = Object.keys(featureVectors[0] || {}).filter(k => k !== 'label');
+  
+  log(`Feature engineering complete. ${featureVectors.length} vectors created with ${featureKeys.length} features each.`);
+  
+  // Update UI components
   if (window.updateClusterFeatureDropdowns) window.updateClusterFeatureDropdowns();
   updateUIState && updateUIState();
 }

@@ -20,18 +20,30 @@
     <!-- 0. Connect -->
     <section>
       <h2>0. Connect</h2>
+      <div class="control-group">
       <button onclick="connectToPuck()">Connect</button>
+      <span id="connectionStatus" class="status-badge inactive">Disconnected</span>
+      </div>
     </section>
 
     <!-- 1. Raw Data Collection (no labels) -->
     <section>
       <h2>1. Collect Raw Data</h2>
-      <button id="startRawBtn" onclick="startRawRecording()">Start Recording</button>
-      <button id="stopRawBtn" onclick="stopRawRecording()">Stop Recording</button>
-      <button onclick="downloadCollectedData()">Download Data</button>
-      <input type="file" id="fileInput" style="display: none;" onchange="loadCollectedData(this.files[0])">
-      <button onclick="document.getElementById('fileInput').click()">Upload Data</button>
-      <span id="rawDataCount"></span>
+      <div class="control-group">
+        <label for="frequencyInput">Sample Frequency (ms):</label>
+        <input type="number" id="frequencyInput" class="input-small" value="100" min="1" onchange="updateFrequency()">
+      </div>
+      <div class="button-group">
+        <button id="startRawBtn" onclick="startRawRecording()">Start Recording</button>
+        <button id="stopRawBtn" onclick="stopRawRecording()">Stop Recording</button>
+        <button onclick="downloadCollectedData()">Download Data</button>
+        <input type="file" id="fileInput" class="file-input" onchange="loadCollectedData(this.files[0])">
+        <button onclick="document.getElementById('fileInput').click()">Upload Data</button>
+      </div>
+      <div class="status-info">
+        <span id="rawRecordingStatus" class="status-badge inactive">Idle</span>
+        <span id="rawDataCount" class="data-counter">Raw samples: 0</span>
+      </div>
     </section>
 
     <!-- 2. Raw Data Visualization -->
@@ -48,29 +60,39 @@
     <section>
       <h2>3. Feature Engineering</h2>
       <form id="featureForm" onsubmit="event.preventDefault(); runFeatureEngineering();">
-        <fieldset>
+        <fieldset class="feature-fieldset">
           <legend>Select Features:</legend>
-          <label><input type="checkbox" id="feat_mean" checked> Mean</label>
-          <label><input type="checkbox" id="feat_stddev" checked> Stddev</label>
-          <label><input type="checkbox" id="feat_min"> Min</label>
-          <label><input type="checkbox" id="feat_max"> Max</label>
+          <label class="checkbox-label"><input type="checkbox" id="feat_mean" checked> Mean</label>
+          <label class="checkbox-label"><input type="checkbox" id="feat_stddev" checked> Stddev</label>
+          <label class="checkbox-label"><input type="checkbox" id="feat_min"> Min</label>
+          <label class="checkbox-label"><input type="checkbox" id="feat_max"> Max</label>
         </fieldset>
-        <label for="windowSize">Window Size:</label>
-        <input type="number" id="windowSize" value="10" min="1" max="100" style="width: 60px;">
+        <div class="control-group">
+          <label for="windowSize">Window Size:</label>
+          <input type="number" id="windowSize" class="input-small" value="10" min="1" max="100">
+        </div>
         <button type="submit">Process Features</button>
       </form>
-      <span id="featureCount"></span>
+      <div class="status-info">
+        <span id="featureStatus" class="status-badge inactive">Not processed</span>
+        <span id="featureCount" class="data-counter">Feature vectors: 0</span>
+      </div>
     </section>
 
     <!-- 4. Clustering (with parameter controls) -->
     <section>
-      <label for="numClusters">Clusters (k):</label>
-      <input type="number" id="numClusters" value="2" min="2" max="10" style="width: 60px;">
+      <h2>4. Clustering Analysis</h2>
+      <div class="control-group">
+        <label for="numClusters">Clusters (k):</label>
+        <input type="number" id="numClusters" class="input-small" value="2" min="2" max="10">
+      </div>
       <button onclick="runClustering()">Run K-means</button>
-      <label for="clusterFeatureX">X Feature:</label>
-      <select id="clusterFeatureX"></select>
-      <label for="clusterFeatureY">Y Feature:</label>
-      <select id="clusterFeatureY"></select>
+      <div class="control-group">
+        <label for="clusterFeatureX">X Feature:</label>
+        <select id="clusterFeatureX"></select>
+        <label for="clusterFeatureY">Y Feature:</label>
+        <select id="clusterFeatureY"></select>
+      </div>
 
       <div class="square-chart">
         <canvas id="clusterChart"></canvas>
@@ -82,28 +104,40 @@
     <!-- 5. Labeled Data Collection (small samples) -->
     <section>
       <h2>5. Collect Labeled Data</h2>
-      <div>
-      <label for="newLabelInput">Add New Label:</label>
-      <input type="text" id="newLabelInput" placeholder="Enter gesture name">
-      <button onclick="addNewGestureLabel()">Add Label</button>
+      <div class="control-group">
+        <label for="newLabelInput">Add New Label:</label>
+        <input type="text" id="newLabelInput" class="input-text" placeholder="Enter gesture name">
+        <button onclick="addNewGestureLabel()">Add Label</button>
       </div>
-      <select id="gestureLabel">
-      <option value="normal">Normal</option>
-      <option value="shake">Shake</option>
-      </select>
-      <button id="startLabelBtn" onclick="startLabeledRecording()">Start Labeled Recording</button>
-      <button id="stopLabelBtn" onclick="stopLabeledRecording()">Stop Labeled Recording</button>
-      <button id="featureLabelBtn" onclick="runLabeledFeatureEngineering()">Extract Labeled Features</button>
+      <div class="control-group">
+        <label for="gestureLabel">Current Label:</label>
+        <select id="gestureLabel">
+          <option value="normal">normal</option>
+          <option value="shake">shake</option>
+        </select>
+      </div>
+      <div class="button-group">
+        <button id="startLabelBtn" onclick="startLabeledRecording()">Start Labeled Recording</button>
+        <button id="stopLabelBtn" onclick="stopLabeledRecording()">Stop Labeled Recording</button>
+        <button id="featureLabelBtn" onclick="runLabeledFeatureEngineering()">Extract Labeled Features</button>
+      </div>
+      <div class="status-info">
+        <span id="labeledRecordingStatus" class="status-badge inactive">Idle</span>
+        <span id="labeledDataCount" class="data-counter">Labeled samples: 0</span>
+        <div id="labelBreakdown" class="label-breakdown"></div>
+      </div>
+    </section>
 
     <!-- 6. Cluster Labeling & Similarity -->
     <section>
       <h2>6. Cluster Labeling & Similarity</h2>
       <button onclick="visualizeClusterLabeling()">Visualize Cluster Labeling</button>
-      <label for="labeledClusterX">X Feature:</label>
-      <select id="labeledClusterX"></select>
-      <label for="labeledClusterY">Y Feature:</label>
-      <select id="labeledClusterY"></select>  
-
+      <div class="control-group">
+        <label for="labeledClusterX">X Feature:</label>
+        <select id="labeledClusterX"></select>
+        <label for="labeledClusterY">Y Feature:</label>
+        <select id="labeledClusterY"></select>
+      </div>
       <button onclick="assignLabelsToClusters()">Assign Labels to Clusters</button>
       <div class="square-chart">
         <canvas id="labeledClusterChart"></canvas>
@@ -113,9 +147,16 @@
     <!-- 7. Training -->
     <section>
       <h2>7. Train Model</h2>
+      <div class="control-group">
+        <label for="epochsInput">Epochs:</label>
+        <input type="number" id="epochsInput" class="input-small" value="50" min="1">
+      </div>
       <button id="trainBtn" onclick="trainModel()">Train</button>
-      <label for="epochsInput">Epochs:</label>
-      <input type="number" id="epochsInput" value="50" min="1" style="width: 60px;">
+      <div class="status-info">
+        <span id="trainingStatus" class="status-badge inactive">Not trained</span>
+        <span id="trainingAccuracy" class="data-counter"></span>
+        <span id="labeledFeatureCount" class="data-counter"></span>
+      </div>
     </section>
 
     <!-- 8. Run the Model -->
@@ -123,6 +164,9 @@
       <h2>8. Run the Model</h2>
       <button id="startInferenceBtn" onclick="startInference()">Start Inference</button>
       <button id="stopInferenceBtn" onclick="stopInference()">Stop Inference</button>
+      <div class="status-info">
+        <span id="inferenceStatus" class="status-badge inactive">Stopped</span>
+      </div>
       <div id="classificationDisplay">
         <p style="margin-bottom: 0.5em; font-weight: bold;">Live Classification:</p>
         <div id="labelBadges" class="label-badges">

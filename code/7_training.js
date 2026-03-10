@@ -49,17 +49,24 @@ function trainModel() {
 	};
 
 	log(`Starting training with ${epochs} epochs...`);
+	
+	// Set training status
+	trainingStatus = 'training';
+	trainingAccuracy = null;
 	updateUIState();
 
 	nn.train(trainingOptions, () => {
 		log("Training complete!");
 		
+		// Set training complete status
+		trainingStatus = 'complete';
+		
 		// Validate the model
 		if (valInputs.length > 0) {
 			validateModel(valInputs, valLabels);
+		} else {
+			updateUIState();
 		}
-		
-		updateUIState();
 	});
 }
 
@@ -88,5 +95,9 @@ function validateModel(valInputs, valLabels) {
 		correct = results.filter(r => r).length;
 		const accuracy = (correct / total * 100).toFixed(2);
 		log(`Validation Accuracy: ${correct}/${total} (${accuracy}%)`);
+		
+		// Update global accuracy state
+		trainingAccuracy = accuracy;
+		updateUIState();
 	});
 }

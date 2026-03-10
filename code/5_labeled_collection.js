@@ -60,27 +60,19 @@ function addNewGestureLabel() {
 // Attach to window for global access
 window.addNewGestureLabel = addNewGestureLabel;
 
-// Run feature engineering for the current label
+// Run feature engineering for all labels
 function runLabeledFeatureEngineering() {
-	if (!currentLabel) {
-		const select = document.getElementById('gestureLabel');
-		if (select && select.value) {
-			setCurrentLabel(select.value);
-		} else {
-			log("Please select a label.");
-			return;
-		}
+	const select = document.getElementById('gestureLabel');
+	if (!select || !select.options.length) {
+		log("No labels available.");
+		return;
 	}
+	
 	if (!collectedSamples || !collectedSamples.length) {
 		log('No collected samples.');
 		return;
 	}
-	// Filter samples for current label
-	const labeledSamples = collectedSamples.filter(s => s.label === currentLabel);
-	if (!labeledSamples.length) {
-		log(`No samples found for label: ${currentLabel}`);
-		return;
-	}
+	
 	// Get feature selection and window size from UI
 	const selected = {
 		mean: document.getElementById('feat_mean').checked,
@@ -89,17 +81,26 @@ function runLabeledFeatureEngineering() {
 		max: document.getElementById('feat_max').checked
 	};
 	const windowSize = parseInt(document.getElementById('windowSize').value, 10) || 1;
-	// Use extractFeatureVectors from feature engineering module
+	
 	if (!window.extractFeatureVectors) {
 		log('Feature extraction function not found.');
 		return;
 	}
-	// Attach label to each feature vector
-	const vectors = window.extractFeatureVectors(labeledSamples, selected, windowSize, () => currentLabel);
-	// Store or expose labeled feature vectors
-	labeledFeatureVectors.push(...vectors);
+	
+	let totalVectors = 0;
+	
+	// Process each unique label in collected samples
+	const labels = [...new Set(collectedSamples.map(s => s.label).filter(l => l != null))];
+	for (const label of labels) {
+		const labeledSamples = collectedSamples.filter(s => s.label === label);
+		const vectors = window.extractFeatureVectors(labeledSamples, selected, windowSize, () => label);
+		labeledFeatureVectors.push(...vectors);
+		totalVectors += vectors.length;
+		log(`Labeled feature engineering: ${vectors.length} vectors created for label "${label}".`);
+	}
+	
+	log(`Total labeled feature vectors: ${totalVectors}`);
 	console.log('Labeled feature vectors:', labeledFeatureVectors);
-	log(`Labeled feature engineering complete. ${vectors.length} new vectors created for label: ${currentLabel}`);
 	updateUIState && updateUIState();
 }
 
