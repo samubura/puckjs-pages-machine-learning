@@ -53,18 +53,62 @@ function inferClass(sample) {
 			log("Inference error: " + err);
 			return;
 		}
-		if (results && results[0]) {
-			const predicted = results[0].label;
-			const confidence = (results[0].confidence * 100).toFixed(1);
-			
-			// Update the UI
-			const liveClassElement = document.getElementById('liveClass');
-			if (liveClassElement) {
-				liveClassElement.textContent = `Live Classification: ${predicted} (${confidence}% confidence)`;
-				liveClassElement.style.fontWeight = 'bold';
-				liveClassElement.style.color = confidence > 70 ? 'green' : 'orange';
-			}
+		if (results && results.length > 0) {
+			updateLabelBadges(results);
 		}
+	});
+}
+
+// Store labels in fixed order to prevent reordering
+let fixedLabelOrder = [];
+
+// Update the UI to display all labels with the recognized one highlighted
+function updateLabelBadges(results) {
+	const labelBadgesContainer = document.getElementById('labelBadges');
+	if (!labelBadgesContainer) return;
+
+	// Build a map of label -> result for quick lookup
+	const resultMap = {};
+	results.forEach(r => {
+		resultMap[r.label] = r;
+	});
+
+	// Initialize or update fixed label order (sorted alphabetically for consistency)
+	const currentLabels = results.map(r => r.label).sort();
+	if (fixedLabelOrder.length === 0 || 
+	    JSON.stringify(fixedLabelOrder.sort()) !== JSON.stringify(currentLabels)) {
+		fixedLabelOrder = currentLabels;
+	}
+
+	// Find the top prediction
+	const topPrediction = results[0];
+	const topLabel = topPrediction.label;
+
+	// Create badge elements for each label in fixed order
+	labelBadgesContainer.innerHTML = '';
+	
+	fixedLabelOrder.forEach((label) => {
+		const badge = document.createElement('span');
+		badge.className = 'label-badge';
+		
+		const result = resultMap[label];
+		const confidence = (result.confidence * 100).toFixed(1);
+		
+		if (label === topLabel) {
+			// Highlight the top prediction
+			if (confidence > 70) {
+				badge.classList.add('active-high');
+			} else {
+				badge.classList.add('active-medium');
+			}
+			badge.innerHTML = `${label} <span class="confidence">${confidence}%</span>`;
+		} else {
+			// Show other labels as inactive
+			badge.classList.add('inactive');
+			badge.innerHTML = `${label} <span class="confidence">${confidence}%</span>`;
+		}
+		
+		labelBadgesContainer.appendChild(badge);
 	});
 }
 
