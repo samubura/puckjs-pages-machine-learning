@@ -153,35 +153,109 @@ function assignLabelsToClusters() {
     }
 
     // Match each cluster to the closest labeled centroid
+    // Use greedy assignment with conflict detection
     const clusterToLabelMap = {};
+    const labelUsageCount = {};
+    
+    // Calculate all distances
+    const distances = [];
     for (const clusterInfo of clusterCentroids) {
-        let minDistance = Infinity;
-        let bestLabel = null;
-        
         for (const labelInfo of labeledCentroids) {
-            const distance = euclideanDistance(clusterInfo.centroid, labelInfo.centroid);
-            if (distance < minDistance) {
-                minDistance = distance;
-                bestLabel = labelInfo.label;
-            }
+            distances.push({
+                clusterId: clusterInfo.clusterId,
+                label: labelInfo.label,
+                distance: euclideanDistance(clusterInfo.centroid, labelInfo.centroid)
+            });
+        }
+    }
+    
+    // Sort by distance (closest first)
+    distances.sort((a, b) => a.distance - b.distance);
+    
+    // Assign clusters to labels, preferring closer matches
+    // If clusters <= labels, try to use each label once
+    const numLabels = labeledCentroids.length;
+    const shouldPreferUnique = numClusters <= numLabels;
+    
+    for (const { clusterId, label, distance } of distances) {
+        // Skip if cluster already assigned
+        if (clusterToLabelMap[clusterId] !== undefined) continue;
+        
+        // If we should prefer unique assignments and this label is taken, skip if we can do better
+        if (shouldPreferUnique && labelUsageCount[label] > 0) {
+            // Check if there are unassigned labels left
+            const unassignedLabels = labeledCentroids.filter(lc => !labelUsageCount[lc.label]);
+            if (unassignedLabels.length > 0) continue;
         }
         
-        clusterToLabelMap[clusterInfo.clusterId] = bestLabel;
-        log(`Cluster ${clusterInfo.clusterId+1} matched to label "${bestLabel}" (distance: ${minDistance.toFixed(3)})`);
+        clusterToLabelMap[clusterId] = label;
+        labelUsageCount[label] = (labelUsageCount[label] || 0) + 1;
+        log(`Cluster ${clusterId+1} matched to label "${label}" (distance: ${distance.toFixed(3)})`);
+    }
+    
+    // Warn about multiple clusters mapping to same label
+    const duplicateLabels = Object.entries(labelUsageCount).filter(([_, count]) => count > 1);
+    if (duplicateLabels.length > 0) {
+        log(`⚠ Warning: Multiple clusters assigned to same label(s):`);
+        duplicateLabels.forEach(([label, count]) => {
+            log(`  - "${label}" used by ${count} clusters`);
+        });
+    }
+    
+    // Warn about unused labels
+    const unusedLabels = labeledCentroids.filter(lc => !labelUsageCount[lc.label]);
+    if (unusedLabels.length > 0) {
+        log(`⚠ Note: ${unusedLabels.length} label(s) not matched: ${unusedLabels.map(l => l.label).join(', ')}`);
+        log(`  Consider using k=${numLabels} clusters for better label coverage`);
+    }
+
+    // Remove previously added cluster-based data (marked with _fromCluster flag)
+    const originalLabeledCount = labeledFeatureVectors.length;
+    labeledFeatureVectors = labeledFeatureVectors.filter(v => !v._fromCluster);
+    const removedCount = originalLabeledCount - labeledFeatureVectors.length;
+    if (removedCount > 0) {
+        log(`Removed ${removedCount} previously assigned cluster samples to avoid duplicates`);
+    }
+
+    // Helper function to check if two feature vectors are identical (excluding label and flags)
+    function areVectorsEqual(v1, v2) {
+        for (const key of featureKeys) {
+            if (Math.abs((v1[key] || 0) - (v2[key] || 0)) > 0.0001) {
+                return false;
+            }
+        }
+        return true;
     }
 
     // Add cluster data with assigned labels to labeledFeatureVectors
+    // Skip samples that already exist in manually labeled data
+    let addedCount = 0;
+    let skippedDuplicates = 0;
+    
     for (let i = 0; i < clusterData.length; i++) {
         const clusterId = clusterLabels[i];
         const assignedLabel = clusterToLabelMap[clusterId];
         
         if (assignedLabel) {
-            const newFeatureVector = { ...clusterData[i], label: assignedLabel };
-            labeledFeatureVectors.push(newFeatureVector);
+            // Check if this feature vector already exists in labeled data
+            const isDuplicate = labeledFeatureVectors.some(existing => 
+                !existing._fromCluster && areVectorsEqual(clusterData[i], existing)
+            );
+            
+            if (isDuplicate) {
+                skippedDuplicates++;
+            } else {
+                const newFeatureVector = { ...clusterData[i], label: assignedLabel, _fromCluster: true };
+                labeledFeatureVectors.push(newFeatureVector);
+                addedCount++;
+            }
         }
     }
 
-    log(`Added ${clusterData.length} samples from clusters to labeled data`);
+    log(`Added ${addedCount} samples from clusters to labeled data`);
+    if (skippedDuplicates > 0) {
+        log(`Skipped ${skippedDuplicates} duplicates that already existed in manually labeled data`);
+    }
     log(`Total labeled samples: ${labeledFeatureVectors.length}`);
 }
 
