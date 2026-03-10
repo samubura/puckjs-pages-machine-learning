@@ -1,34 +1,52 @@
 // Clustering step logic
 
-function runClusteringAndVisualize() {
+function runClustering() {
   if (!featureVectors || !featureVectors.length) {
     log("No preprocessed features to cluster. Please run preprocessing first.");
     return;
   }
-  // Get selected features from UI
-  const xFeature = document.getElementById('clusterFeatureX').value;
-  const yFeature = document.getElementById('clusterFeatureY').value;
-  const dataPoints = featureVectors.map(f => [f[xFeature], f[yFeature]]);
+  // Cluster on all features except 'label'
+  const featureKeys = Object.keys(featureVectors[0]).filter(k => k !== 'label');
+  const allFeatureData = featureVectors.map(f => featureKeys.map(k => f[k]));
   const k = parseInt(document.getElementById('numClusters').value, 10) || 4;
   const options = { k, maxIter: 5, threshold: 0.5 };
-  window.kmeansModel = ml5.kmeans(dataPoints, options, modelReady);
+  window.kmeansModel = ml5.kmeans(allFeatureData, options, modelReady);
 
   function modelReady() {
-    // ml5.js attaches the clustered dataset to kmeansModel.dataset
-    // Each data point is an array, possibly with a .centroid property for cluster index
     if (!window.kmeansModel || !window.kmeansModel.dataset) {
       log('K-means failed: no dataset.');
       return;
     }
-    // Extract cluster assignments from .centroid property
+    // Extract cluster assignments
     const clusteredData = window.kmeansModel.dataset;
-    const labels = clusteredData.map(d => d.centroid);
-    lastClusterAssignments = labels;
-    lastClusterCentroids = window.kmeansModel.centroids;
-    visualizeClusters2D(dataPoints, labels, xFeature, yFeature);
+    window.lastClusterAssignments = clusteredData.map(d => d.centroid);
+    window.lastClusterCentroids = window.kmeansModel.centroids;
     log(`Clustering complete. ${k} clusters formed.`);
+    redrawClusterVisualization();
   }
 }
+
+function redrawClusterVisualization() {
+  if (!featureVectors || !featureVectors.length || !window.lastClusterAssignments) {
+    log('No clustering results to visualize.');
+    return;
+  }
+  const xFeature = document.getElementById('clusterFeatureX').value;
+  const yFeature = document.getElementById('clusterFeatureY').value;
+  const dataPoints2D = featureVectors.map(f => [f[xFeature], f[yFeature]]);
+  visualizeClusters2D(dataPoints2D, window.lastClusterAssignments, xFeature, yFeature);
+}
+
+// Attach redraw handler to dropdowns
+window.addEventListener('DOMContentLoaded', function() {
+  const xSel = document.getElementById('clusterFeatureX');
+  const ySel = document.getElementById('clusterFeatureY');
+  if (xSel) xSel.addEventListener('change', redrawClusterVisualization);
+  if (ySel) ySel.addEventListener('change', redrawClusterVisualization);
+});
+
+window.runClustering = runClustering;
+window.redrawClusterVisualization = redrawClusterVisualization;
 
 function visualizeClusters2D(dataPoints, labels, xFeature, yFeature) {
   const chartCanvas = document.getElementById('clusterChart');
@@ -102,5 +120,4 @@ function updateClusterFeatureDropdowns() {
 }
 window.updateClusterFeatureDropdowns = updateClusterFeatureDropdowns;
 
-// Expose for UI
-window.runClusteringAndVisualize = runClusteringAndVisualize;
+

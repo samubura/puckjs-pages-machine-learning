@@ -45,12 +45,29 @@ function processSample(sample) {
 		sample.label = currentLabel;
 		sample.timestamp = Date.now();
 		collectedSamples.push(sample);
+		console.log("Collected sample:", sample);
 		updateUIState();
 	} else if (inferencing && nn) {
 		inferClass(sample);
 	}
 }
 
-function sendCommand(cmd) {
-	if (uart) uart.write(cmd);
+function startCollecting() {
+	if (!uart) {
+		log("Connect to Puck.js first.");
+		return;
+	}
+	recording = true;
+	uart.write("Puck.accelOn();setInterval(()=>{var a=Puck.accel();Bluetooth.println(JSON.stringify(a));},100);\n");
 }
+
+
+function stopCollecting() {
+	if (!uart) {
+		log("Connect to Puck.js first.");
+		return;
+	}
+	recording = false;
+	uart.write("reset();\n");
+}
+

@@ -5,17 +5,18 @@ function startRawRecording() {
 		log("Connect to Puck.js first.");
 		return;
 	}
-	recording = true;
+
 	collectedSamples = [];
+	setCurrentLabel(null);
 	log("Started raw data collection.");
 	updateUIState();
-	sendCommand("START\n");
+	startCollecting();
 }
 
 function stopRawRecording() {
 	if (!recording) return;
 	recording = false;
-	sendCommand("STOP\n");
+	stopCollecting();
 	log(`Stopped raw data collection. Collected ${collectedSamples.length} samples.`);
 	updateUIState();
 }

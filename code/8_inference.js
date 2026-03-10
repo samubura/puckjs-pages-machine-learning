@@ -16,6 +16,4 @@ function inferClass(sample, features = ["ax", "ay", "az", "gx", "gy", "gz"]) {
 		}
 	});
 }
-// Step 7: Inference
-// Handles running the model and live classification
-// ...existing code will be moved here in the next step...
+

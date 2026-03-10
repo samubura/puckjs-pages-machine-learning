@@ -3,8 +3,7 @@
 <head>
   <title>Puck.js Gesture ML Tool</title>
   <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>
-  <!-- <script src="https://www.espruino.com/js/uart.js"></script> -->
-    <script src="https://www.puck-js.com/puck.js"></script>
+  <script src="https://www.espruino.com/js/uart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css">
   <!-- Style moved to style.css -->
@@ -67,11 +66,12 @@
     <section>
       <label for="numClusters">Clusters (k):</label>
       <input type="number" id="numClusters" value="4" min="2" max="10" style="width: 60px;">
+      <button onclick="runClustering()">Run K-means</button>
       <label for="clusterFeatureX">X Feature:</label>
       <select id="clusterFeatureX"></select>
       <label for="clusterFeatureY">Y Feature:</label>
       <select id="clusterFeatureY"></select>
-      <button onclick="runClusteringAndVisualize()">Run K-means & Visualize</button>
+
       <div class="square-chart">
         <canvas id="clusterChart"></canvas>
       </div>
@@ -82,28 +82,26 @@
     <!-- 5. Labeled Data Collection (small samples) -->
     <section>
       <h2>5. Collect Labeled Data</h2>
+      <div>
+      <label for="newLabelInput">Add New Label:</label>
+      <input type="text" id="newLabelInput" placeholder="Enter gesture name">
+      <button onclick="addNewGestureLabel()">Add Label</button>
+      </div>
       <select id="gestureLabel">
-        <option value="regular">Normal</option>
-        <option value="shake">Shake</option>
-        <option value="tilt_left">Tilt Left</option>
-        <option value="tilt_right">Tilt Right</option>
+      <option value="normal">Normal</option>
+      <option value="shake">Shake</option>
       </select>
       <button id="startLabelBtn" onclick="startLabeledRecording()">Start Labeled Recording</button>
       <button id="stopLabelBtn" onclick="stopLabeledRecording()">Stop Labeled Recording</button>
-      <span id="labeledDataCount"></span>
-      <button onclick="visualizeLabeledData()">Visualize Labeled Data</button>
-      <canvas id="labeledDataChart"></canvas>
-
-    </section>
+      <button id="featureLabelBtn" onclick="runLabeledFeatureEngineering()">Extract Labeled Features</button>
 
     <!-- 6. Cluster Labeling & Similarity -->
     <section>
       <h2>6. Cluster Labeling & Similarity</h2>
-      <button onclick="assignLabelsToClusters()">Assign Labels to Clusters</button>
-      <button onclick="visualizeClusterLabeling()">Visualize Cluster Labeling</button>
-      <div id="clusterLabelingUI"></div>
-      <div id="similarityResults"></div>
-      <canvas id="clusterLabelingChart"></canvas>
+      <button onclick="visualizeLabeledData()">Show Labeled Data</button>
+      <div class="square-chart">
+        <canvas id="labeledClusterChart"></canvas>
+      </div>
     </section>
 
     <!-- 7. Training -->
